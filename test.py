@@ -19,17 +19,26 @@ import shownp as viewer
 
 from PIL import Image, ImageDraw
 
-im = Image.open("TRN/crop1.ppm")
-imagematrix = viewer.RGBToGray(np.asarray(im))
-viewer.showGray(imagematrix)
 
-# x, y =  im.size
-# eX, eY = 30, 60 #Size of Bounding Box for ellipse
-#
-# bbox =  (x/2 - eX/2, y/2 - eY/2, x/2 + eX/2, y/2 + eY/2)
-# draw = ImageDraw.Draw(im)
-# draw.ellipse(bbox, fill=None, outline=128)
-# del draw
-#
-# im.save("output.png")
-# im.show()
+
+im = Image.open("TRN/Scene1.ppm")
+# imagematrix = viewer.RGBToGray(np.asarray(im))
+# viewer.showGray(imagematrix)
+r = 5
+y = 91
+x = 365
+y2 = 237
+x2 = 275
+x3 = 258
+y3 = 246
+bbox =  (x - r, y - r, x + r , y + r)
+bbox2 =  (x2 - r, y2 - r, x2 + r , y2 + r)
+bbox3 =  (x3 - r, y3 - r, x3 + r , y3 + r)
+draw = ImageDraw.Draw(im)
+draw.ellipse(bbox, fill=200, outline=128)
+draw.ellipse(bbox2, fill=200, outline=128)
+draw.ellipse(bbox3, fill=0, outline=128)
+del draw
+
+im.save("output.png")
+im.show()

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import shownp as viewer
 
-im = Image.open("src/training/crop7.ppm")
+im = Image.open("TRN/Scene1.ppm")
 imagematrix = viewer.RGBToGray(np.asarray(im))
 viewer.showGray(imagematrix)
 threshold = 120
@@ -29,21 +29,25 @@ for i in range(0, len(clusters)-1):
         sortedclusters[clusters[i]] = [mat[i]]
 
 print  len(sortedclusters[1])
-print "centroid is x={}, y={}".format(sum(map(lambda x: x[0],sortedclusters[1]))/len(sortedclusters[1]),
+print "centroidin is x={}, y={}".format(sum(map(lambda x: x[0],sortedclusters[1]))/len(sortedclusters[1]),
                                       sum(map(lambda x: x[1],sortedclusters[1]))/len(sortedclusters[1]))
 
 
 
-# sortedclusters = {k: v for k,v in sortedclusters.iteritems() if len(v) > 4}
-# for (k, v) in sortedclusters.items():
-#     print "k={} v={}".format(k ,v)
-# mat = []
-# map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
-# mat = np.array(mat)
-# plt.scatter(mat[:, 0], mat[:, 1])
-# plt.axis("equal")
-# plt.show()
-# viewer.showGray(imagematrix)
+sortedclusters = {k: v for k,v in sortedclusters.iteritems() if len(v) > 4}
+for (k, v) in sortedclusters.items():
+    print "k={} v={}".format(k ,v)
+mat = []
+map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
+mat = np.array(mat)
+plt.scatter(mat[:, 0], mat[:, 1])
+plt.axis("equal")
+plt.show()
+viewer.showGray(imagematrix)
+
+
+
+
 
 
 

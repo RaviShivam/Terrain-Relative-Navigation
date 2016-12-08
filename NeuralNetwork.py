@@ -68,7 +68,7 @@ class Network:
     def sigmoid(self, m):
         return 1 / (1 + np.exp(-m))
 
-    def save_network(self, dir="network_configuration"):
+    def save_network(self, dir):
         dir_path = os.path.join(os.curdir, "data", dir)
 
         layers_file = os.path.join(dir_path, "layers")
@@ -83,7 +83,7 @@ class Network:
         f.write(biases_data)
         f.close()
 
-    def read_network(self, dir="network_configuration"):
+    def read_network(self, dir):
         f = open(os.path.join(os.curdir, "data", dir, "layers"), "rb")
         layers_data = f.read()
         self.layers = pickle.loads(layers_data)

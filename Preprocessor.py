@@ -78,7 +78,7 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
         diameter = 1.35 * val[0]
         y = ((middlepoints[0][0] + middlepoints[1][0]) / 2) - diameter / 8
         x = ((middlepoints[0][1] + middlepoints[1][1]) / 2) + diameter / 4
-        centerpoints[k] = np.array([x, y])
+        centerpoints[k] = np.array([x, y, diameter])
     return reIndexCenterPoints(centerpoints)
 
 def oneCombinationNormVector(point, centerpoints):
@@ -92,16 +92,16 @@ def oneCombinationNormVector(point, centerpoints):
     return normvectors
 
 def allCombinationNormVectors(centerpoints):
-    normvectors = {}
+    allcombinationnormvectors = {}
     for (k, point) in centerpoints.items():
-        normvectors[k] = []
+        allcombinationnormvectors[(point.tolist()[0], point.tolist()[1])] = []
         for (k2, point2) in centerpoints.items():
             if (point[0] == point2[0] and point[1] == point2[1]):
                 continue
             else:
                 vect = (point2 - point) / np.linalg.norm(point2 - point)
-                normvectors[k].append(vect)
-    return normvectors
+                allcombinationnormvectors[point.tolist()[0], point.tolist()[1]].append(vect)
+    return allcombinationnormvectors
 
 
 def retrievAllNormVectorsFromReference():
@@ -110,6 +110,7 @@ def retrievAllNormVectorsFromReference():
     sortedclusters = retrieveCraterClusters(array)
     # centerpoints = drawFoundCraters(sortedclusters,imagematrix, im)
     centerpoints = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    viewer.saveCombinations(centerpoints, "centerpoints")
     return allCombinationNormVectors(centerpoints)
 
 
@@ -139,7 +140,7 @@ def isSubsetOf(smallSet, values, threshold):
 
 def locateDescentImageInReferenceImage(imagename):
     # allPossibleCombinations = retrievAllNormVectorsFromReference()
-    # viewer.saveCombinations(allPossibleCombinations)
+    # viewer.saveCombinations(allPossibleCombinations, "combinations")
 
     allPossibleCombinations = viewer.readCombinations()
 
@@ -149,15 +150,13 @@ def locateDescentImageInReferenceImage(imagename):
     sortedclusters = retrieveCraterClusters(array)
     # drawFoundCraters(sortedclusters,imagematrix, im)
     centerpoints = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
-    verificationpoint = centerpoints[11]
-    print verificationpoint
+    verificationpoint = centerpoints[len(centerpoints)]
     smallSet = oneCombinationNormVector(verificationpoint, centerpoints)
     for (k,values) in allPossibleCombinations.items():
         if (isSubsetOf(smallSet, values, 0.1)):
-            print smallSet
-            print values
-            print "True"
-
+            print k
+            print verificationpoint
+#
 
 
 

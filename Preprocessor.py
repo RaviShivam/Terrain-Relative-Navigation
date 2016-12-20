@@ -3,9 +3,11 @@ import numpy as np
 import scipy.cluster.hierarchy as hcluster
 from PIL import Image
 from PIL import ImageDraw
+import matplotlib.pyplot as plt
 
 import shownp as viewer
 
+referenceAltitude = 20000
 primaryFilterTreshold = 120
 
 
@@ -35,14 +37,21 @@ def retrieveCraterClusters(array):
         else:
             sortedclusters[clusters[i]] = [mat[i]]
     sortedclusters = {k: v for k, v in sortedclusters.iteritems() if len(v) > 8}
+    mat = []
+    map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
+    # viewer.plotClusters(mat)
     return sortedclusters
+
+
 
 
 def drawFoundCraters(sortedclusters, imagematrix, im):
     centerpoints = {}
     draw = ImageDraw.Draw(im)
+    edges = []
     for (k, v) in sortedclusters.items():
         edgecluster = viewer.findEdges(v, imagematrix)
+        map(lambda x: edges.append(x), edgecluster)
         val = viewer.searchForFartestPoint(edgecluster)
         middlepoints = val[1]
         diameter = 1.35 * val[0]
@@ -53,9 +62,10 @@ def drawFoundCraters(sortedclusters, imagematrix, im):
         x = ((middlepoints[0][1] + middlepoints[1][1]) / 2) + diameter / 4
         centerpoints[k] = np.array([x, y])
         bbox = (x - r, y - r, x + r, y + r)
-        draw.ellipse(bbox, fill=None, outline=400)
+        # draw.ellipse(bbox, fill=None, outline=400)
+        im = viewer.draw_ellipse(im, bbox, width=4)
 
-    # Draw circels around craters
+    # viewer.plotClusters(edges)
     del draw
     im.save("output.png")
     im.show()
@@ -71,6 +81,7 @@ def reIndexCenterPoints(centerpoints):
 
 def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
     centerpoints = {}
+    diameters = {}
     for (k, v) in sortedclusters.items():
         edgecluster = viewer.findEdges(v, imagematrix)
         val = viewer.searchForFartestPoint(edgecluster)
@@ -78,8 +89,9 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
         diameter = 1.35 * val[0]
         y = ((middlepoints[0][0] + middlepoints[1][0]) / 2) - diameter / 8
         x = ((middlepoints[0][1] + middlepoints[1][1]) / 2) + diameter / 4
-        centerpoints[k] = np.array([x, y, diameter])
-    return reIndexCenterPoints(centerpoints)
+        centerpoints[k] = np.array([x, y])
+        diameters[k] = diameter
+    return reIndexCenterPoints(centerpoints), diameters
 
 def oneCombinationNormVector(point, centerpoints):
     normvectors = []
@@ -94,13 +106,13 @@ def oneCombinationNormVector(point, centerpoints):
 def allCombinationNormVectors(centerpoints):
     allcombinationnormvectors = {}
     for (k, point) in centerpoints.items():
-        allcombinationnormvectors[(point.tolist()[0], point.tolist()[1])] = []
+        allcombinationnormvectors[k] = []
         for (k2, point2) in centerpoints.items():
             if (point[0] == point2[0] and point[1] == point2[1]):
                 continue
             else:
                 vect = (point2 - point) / np.linalg.norm(point2 - point)
-                allcombinationnormvectors[point.tolist()[0], point.tolist()[1]].append(vect)
+                allcombinationnormvectors[k].append(vect)
     return allcombinationnormvectors
 
 
@@ -109,7 +121,7 @@ def retrievAllNormVectorsFromReference():
     array, imagematrix = applyPrimaryIlluminationFilter(im)
     sortedclusters = retrieveCraterClusters(array)
     # centerpoints = drawFoundCraters(sortedclusters,imagematrix, im)
-    centerpoints = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
     viewer.saveCombinations(centerpoints, "centerpoints")
     return allCombinationNormVectors(centerpoints)
 
@@ -138,30 +150,57 @@ def isSubsetOf(smallSet, values, threshold):
         return False
 
 
+def drawDescentImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint):
+    refimage = Image.open("TRN/ReferenceMap.ppm")
+    draw = ImageDraw.Draw(refimage)
+    draw.line((upperleftpoint[0],upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
+    draw.line((upperleftpoint[0],upperleftpoint[1], lowerleftpoint[0], lowerleftpoint[1]), fill = 128, width=5)
+    draw.line((lowerleftpoint[0],lowerleftpoint[1], lowerrightpoint[0], lowerrightpoint[1]), fill = 128, width=5)
+    draw.line((lowerrightpoint[0],lowerrightpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
+    draw.line((middlepoint[0],middlepoint[1]-1, middlepoint[0], middlepoint[1]+1), fill = 128, width= 12)
+    draw.line((middlepoint[0]-1,middlepoint[1], middlepoint[0]+1, middlepoint[1]), fill = 128, width= 12)
+    refimage.show()
+
+
 def locateDescentImageInReferenceImage(imagename):
-    # allPossibleCombinations = retrievAllNormVectorsFromReference()
-    # viewer.saveCombinations(allPossibleCombinations, "combinations")
+    allPossibleCombinations = retrievAllNormVectorsFromReference()
+    viewer.saveCombinations(allPossibleCombinations, "combinations")
 
-    allPossibleCombinations = viewer.readCombinations()
-
+    allPossibleCombinations = viewer.readCombinations("combinations")
+    referenceCenterpoints = viewer.readCombinations("centerpoints")
     im = Image.open(imagename)
     array,imagematrix = applyPrimaryIlluminationFilter(im)
-    # viewer.showGray(imagematrix)
     sortedclusters = retrieveCraterClusters(array)
     # drawFoundCraters(sortedclusters,imagematrix, im)
-    centerpoints = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
-    verificationpoint = centerpoints[len(centerpoints)]
-    smallSet = oneCombinationNormVector(verificationpoint, centerpoints)
+    centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    verificationcrater = centerpoints[3]
+    smallSet = oneCombinationNormVector(verificationcrater, centerpoints)
+    referencecrater = 0
     for (k,values) in allPossibleCombinations.items():
         if (isSubsetOf(smallSet, values, 0.1)):
-            print k
-            print verificationpoint
+            referencecrater = referenceCenterpoints[k]
+            break
+    # s = verificationcrater[2]/referencecrater[2]
+    s = 2
+    r = np.array([referencecrater[0],referencecrater[1]])
+    v = np.array([verificationcrater[0], verificationcrater[1]])
+    upperleftpoint = r - (v/s)
+    lowerrightpoint = [r[0] + (512 - v[0])/s, r[1] + (512 - v[1])/s]
+    upperrightpoint = [r[0] + (512 - v[0])/s, r[1] - v[1]/s]
+    lowerleftpoint = [r[0] - v[0]/s, r[1] + (512 - v[1])/s]
+    middlepoint = (upperleftpoint+lowerleftpoint+upperrightpoint+lowerrightpoint)/4
+
+    drawDescentImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint)
+
 #
 
 
 
 # retrievAllNormVectorsFromReference()
 locateDescentImageInReferenceImage("TRN/Scene1.ppm")
+# locateDescentImageInReferenceImage("TRN/Scene2.ppm")
+# locateDescentImageInReferenceImage("TRN/Scene3.ppm")
+# locateDescentImageInReferenceImage("TRN/Scene4.ppm")
 
 
 

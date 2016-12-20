@@ -179,6 +179,7 @@ def locateDescentImageInReferenceImage(imagename):
     for (k,values) in allPossibleCombinations.items():
         if (isSubsetOf(smallSet, values, 0.1)):
             referencecrater = referenceCenterpoints[k]
+
             break
     # s = verificationcrater[2]/referencecrater[2]
     s = 2

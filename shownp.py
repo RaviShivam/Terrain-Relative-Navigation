@@ -16,7 +16,23 @@ def searchForFartestPoint(points):
             if (newdis > maxdis):
                 maxdis = newdis
                 farpoints = [i,j]
+    # farpoints = [[farpoints[0][1], farpoints[0][0]], [farpoints[1][1], farpoints[1][0]]]
     return (maxdis, farpoints)
+
+def findClosestPointTo(point, edgecluster):
+    mindistance = 999
+    closestpoint = edgecluster[1]
+    for point2 in edgecluster:
+        newdis = np.sqrt(np.square(point[0]-point[0]) + np.square(point[1]-point2[1]))
+        if (newdis < mindistance):
+            mindistance = newdis
+            closestpoint = point2
+    return (mindistance, closestpoint)
+
+
+def drawpoint(draw, point, width):
+    draw.line((point[0], point[1] - 1, point[0], point[1] + 1), fill = 128, width = width)
+    draw.line((point[0] - 1, point[1], point[0] + 1, point[1]), fill = 128, width = width)
 
 def findEdges(points, imagematrix):
     edges = []

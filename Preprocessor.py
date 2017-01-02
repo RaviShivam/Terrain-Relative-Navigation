@@ -1,5 +1,6 @@
 import numpy as np
 
+import math
 import scipy.cluster.hierarchy as hcluster
 from PIL import Image
 from PIL import ImageDraw
@@ -43,33 +44,61 @@ def retrieveCraterClusters(array):
     return sortedclusters
 
 
+def rotatePointAround(rightpoint, middlepoint):
+    print "rightpoint= {}, middlepoint= {}".format(rightpoint, middlepoint)
+    rotationpoint = np.array([rightpoint[0] - middlepoint[0], rightpoint[1]-middlepoint[1]])
+    theta = math.radians(90)
+    c, s = np.cos(theta), np.sin(theta)
+    rotationMatrix = np.matrix('{} {}; {} {}'.format(c, -s, s, c))
+    rotationpoint = np.dot(rotationMatrix, rotationpoint)
+    rotationpoint = rotationpoint.tolist()[0]
+    rotationpoint = [rotationpoint[0]+middlepoint[0], rotationpoint[1]+middlepoint[1]]
+    return rotationpoint
+
+
+
+
+def retrieveSemiMinorAxis(fartestpoints, middlepoint, draw):
+    rightpoint =[]
+    if (fartestpoints[0][0] > fartestpoints[1][0]):
+        rightpoint = fartestpoints[0]
+    else:
+        rightpoint = fartestpoints[1]
+    rotatedpoint = rotatePointAround(rightpoint, middlepoint)
+    viewer.drawpoint(draw, middlepoint, 6)
+    # viewer.drawpoint(draw, (rotatedpoint[1], rotatedpoint[0]), 6)
+
 
 
 def drawFoundCraters(sortedclusters, imagematrix, im):
-    centerpoints = {}
     draw = ImageDraw.Draw(im)
-    edges = []
+    # edges = []
     for (k, v) in sortedclusters.items():
-        edgecluster = viewer.findEdges(v, imagematrix)
-        map(lambda x: edges.append(x), edgecluster)
-        val = viewer.searchForFartestPoint(edgecluster)
-        middlepoints = val[1]
-        diameter = 1.35 * val[0]
-        # diameter = (4*np.sqrt(len(v)/3.14) + 1.4*val[0])/2
-        # diameter = (4*np.sqrt(len(v)/3.14) + 1.4*val[0])/2
-        r = diameter / 2
-        y = ((middlepoints[0][0] + middlepoints[1][0]) / 2) - diameter / 8
-        x = ((middlepoints[0][1] + middlepoints[1][1]) / 2) + diameter / 4
-        centerpoints[k] = np.array([x, y])
-        bbox = (x - r, y - r, x + r, y + r)
-        # draw.ellipse(bbox, fill=None, outline=400)
-        im = viewer.draw_ellipse(im, bbox, width=4)
+        edgecluster = viewer.findEdges(v, imagematrix) #Retrieves map of edgepoints in each cluster.
+        # map(lambda x: edges.append((x[0],x[1])),edgecluster)
+        # map(lambda x: viewer.drawpoint(draw, (x[1], x[0]), 6), edgecluster)
+        distance, fartestpoints = viewer.searchForFartestPoint(edgecluster) #Search for fartestpoint in cluster for diameter determination.
+        viewer.drawpoint(draw, (fartestpoints[0][1],fartestpoints[0][0]), 6)
+        # viewer.drawpoint(draw, fartestpoints[0], 6)
+        diameter = 1.35 * distance
+        a = diameter / 2
+        x, y = calculateMiddlePoint(diameter, fartestpoints)
+        b = retrieveSemiMinorAxis(fartestpoints, (x,y), draw)
+        bbox = (x - a, y - a, x + a, y + a)
+        # im = viewer.draw_ellipse(im, bbox, width=4) #Thick bounds
+        draw.ellipse(bbox, fill=None, outline=400) #less thick bounds
 
     # viewer.plotClusters(edges)
-    del draw
+    # del draw
     im.save("output.png")
     im.show()
-    return centerpoints
+
+
+def calculateMiddlePoint(diameter, fartestpoints):
+    y = ((fartestpoints[0][0] + fartestpoints[1][0]) / 2) - diameter / 8
+    x = ((fartestpoints[0][1] + fartestpoints[1][1]) / 2) + diameter / 4
+    return x, y
+
 
 def reIndexCenterPoints(centerpoints):
     counter = 1
@@ -159,27 +188,23 @@ def drawDescentImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerright
     draw.line((lowerrightpoint[0],lowerrightpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
     draw.line((middlepoint[0],middlepoint[1]-1, middlepoint[0], middlepoint[1]+1), fill = 128, width= 12)
     draw.line((middlepoint[0]-1,middlepoint[1], middlepoint[0]+1, middlepoint[1]), fill = 128, width= 12)
-    refimage.show()
+    # refimage.show()
 
 
 def locateDescentImageInReferenceImage(imagename):
-    allPossibleCombinations = retrievAllNormVectorsFromReference()
-    viewer.saveCombinations(allPossibleCombinations, "combinations")
+    # allPossibleCombinations = retrievAllNormVectorsFromReference()
+    # viewer.saveCombinations(allPossibleCombinations, "combinations")
 
     allPossibleCombinations = viewer.readCombinations("combinations")
     referenceCenterpoints = viewer.readCombinations("centerpoints")
     im = Image.open(imagename)
-    array,imagematrix = applyPrimaryIlluminationFilter(im)
-    sortedclusters = retrieveCraterClusters(array)
-    # drawFoundCraters(sortedclusters,imagematrix, im)
-    centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    centerpoints = retrieveCraterCenterpointsAndDiameters(im)
     verificationcrater = centerpoints[3]
     smallSet = oneCombinationNormVector(verificationcrater, centerpoints)
     referencecrater = 0
     for (k,values) in allPossibleCombinations.items():
         if (isSubsetOf(smallSet, values, 0.1)):
             referencecrater = referenceCenterpoints[k]
-
             break
     # s = verificationcrater[2]/referencecrater[2]
     s = 2
@@ -192,6 +217,15 @@ def locateDescentImageInReferenceImage(imagename):
     middlepoint = (upperleftpoint+lowerleftpoint+upperrightpoint+lowerrightpoint)/4
 
     drawDescentImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint)
+
+
+def retrieveCraterCenterpointsAndDiameters(im):
+    array, imagematrix = applyPrimaryIlluminationFilter(im)
+    sortedclusters = retrieveCraterClusters(array)
+    drawFoundCraters(sortedclusters,imagematrix, im)
+    centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    return centerpoints
+
 
 #
 

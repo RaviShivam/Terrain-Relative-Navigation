@@ -10,12 +10,6 @@
 # plt.scatter(X[:,0], X[:,1])
 # print X
 # plt.show()
-from PIL import Image
-from PIL import ImageDraw
-
-import numpy as np
-
-import shownp as viewer
 
 from PIL import Image, ImageDraw
 

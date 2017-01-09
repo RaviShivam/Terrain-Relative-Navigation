@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from PIL import ImageDraw
 
-
+insert = 3
 def searchForFartestPoint(points):
     maxdis = 0;
     farpoints = [points[0],points[1]]
@@ -58,16 +58,16 @@ def showGray(img):
     plt.show()
 
 
-def saveCombinations(allCombinations, file):
-    dir_path = os.path.join(os.curdir, "data")
+def saveData(allCombinations, file):
+    dir_path = os.path.join(os.curdir, "../data")
     combinationsfile = os.path.join(dir_path, file)
     combinationdata = pickle.dumps(allCombinations, protocol=0)
     f = open(combinationsfile, "wb")
     f.write(combinationdata)
     f.close()
 
-def readCombinations(file):
-    f = open(os.path.join(os.curdir, "data", file), "rb")
+def loadData(file):
+    f = open(os.path.join(os.curdir, "../data", file), "rb")
     layers_data = f.read()
     return pickle.loads(layers_data)
 
@@ -76,6 +76,11 @@ def plotClusters(mat):
     plt.scatter(mat[:, 0], mat[:, 1])
     plt.axis("equal")
     plt.show()
+
+def calculateMiddlePoint(diameter, fartestpoints):
+    y = ((fartestpoints[0][0] + fartestpoints[1][0]) / 2) - diameter / 8
+    x = ((fartestpoints[0][1] + fartestpoints[1][1]) / 2) + diameter / 4
+    return x, y
 
 def draw_ellipse(image, bounds, width=1, outline='red', antialias=4):
     """Improved ellipse drawing function, based on PIL.ImageDraw."""

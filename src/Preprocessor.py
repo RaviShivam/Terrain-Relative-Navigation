@@ -18,23 +18,22 @@ def allCombinationNormVectors(centerpoints):
                 allcombinationnormvectors[k].append(vect)
     return allcombinationnormvectors
 
-def retrievAllNormVectorsFromReference():
-    referenceCatolog = viewer.loadData("referenceCatalogue")
+def retrievAllNormVectorsFromReference(catalogue):
+    referenceCatolog = viewer.loadData(catalogue)
     centerpoints = {}
-    map(lambda (k, v): centerpoints.update({k: v.centerpoint}), referenceCatolog.items())
+    # map(lambda (k, v): centerpoints.update({k: v.centerpoint}), referenceCatolog.items())
+    map(lambda (k, v): centerpoints.update({k: v}), referenceCatolog.items())
     return allCombinationNormVectors(centerpoints)
 
 def preprocessReferenceImage(catalogue, combinations):
-    allPossibleCombinations = retrievAllNormVectorsFromReference()
-    print allPossibleCombinations
-    viewer.saveData(allPossibleCombinations, "combinations")
-
-    allPossibleCombinations = viewer.loadData("combinations")
-    referenceCenterpoints = viewer.loadData("centerpoints")
+    allPossibleCombinations = retrievAllNormVectorsFromReference(catalogue)
+    viewer.saveData(allPossibleCombinations, combinations)
 
 
-
-
+def extractCenterpoints(reference_catalogue):
+    centerpoints = {}
+    map(lambda (key, crater): centerpoints.update({key:crater.centerpoint}), reference_catalogue.items())
+    return centerpoints
 
 
 #### Neural Network#####

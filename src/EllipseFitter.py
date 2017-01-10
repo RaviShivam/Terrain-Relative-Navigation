@@ -1,6 +1,7 @@
 import numpy as np
 
 import math
+import random
 import scipy.cluster.hierarchy as hcluster
 from PIL import Image
 from PIL import ImageDraw
@@ -36,18 +37,19 @@ def drawFoundCraters(sortedclusters, imagematrix, im):
     # edges = []
     for (k, v) in sortedclusters.items():
         edgecluster = viewer.findEdges(v, imagematrix) #Retrieves map of edgepoints in each cluster.
-        # map(lambda x: edges.append((x[0],x[1])),edgecluster)
-        # map(lambda x: viewer.drawpoint(draw, (x[1], x[0]), 6), edgecluster)
+        # map(lambda x: viewer.drawpoint(draw, (x[1], x[0]), 6), v)
         distance, fartestpoints = viewer.searchForFartestPoint(edgecluster) #Search for fartestpoint in cluster for diameter determination.
-        viewer.drawpoint(draw, (fartestpoints[0][1],fartestpoints[0][0]), 6)
+        # viewer.drawpoint(draw, (fartestpoints[0][1],fartestpoints[0][0]), 6)
         # viewer.drawpoint(draw, fartestpoints[0], 6)
         diameter = 1.35 * distance
         a = diameter / 2
         x, y = viewer.calculateMiddlePoint(diameter, fartestpoints)
+        x = x + random.gauss(0, 2)
+        y = y + random.gauss(0, 2)
         b = retrieveSemiMinorAxis(fartestpoints, (x,y), draw)
         bbox = (x - a, y - a, x + a, y + a)
         # im = viewer.draw_ellipse(im, bbox, width=4) #Thick bounds
-        draw.ellipse(bbox, fill=None, outline=400) #less thick bounds
+        # draw.ellipse(bbox, fill=None, outline=400) #less thick bounds
 
     # viewer.plotClusters(edges)
     # del draw

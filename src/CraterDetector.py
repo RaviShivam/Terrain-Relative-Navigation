@@ -1,8 +1,7 @@
 import numpy as np
 import scipy.cluster.hierarchy as hcluster
 import shownp as viewer
-
-import Preprocessor as preprocessor
+import EllipseFitter as ellipsefitter
 
 primaryFilterTreshold = 120
 
@@ -13,15 +12,8 @@ def applyPrimaryIlluminationFilter(im):
     [1] All gray-scale values lower than a threshold are set to 0
     [2] All gray-scale values higher than a threshold are set to 255 (max)
 
-    Parameters
-    ----------
-    im (Image) = The image file that needs to be filtered.
-
-    Return
-    ------
-    array (list) = list of all the pixels set to 0.
-    imagematrix (ndarray) = matrix of the image with values either 0 of 255.
-
+    :param im: The image file that needs to be filtered.
+    :return: array (list) = list of all the pixels set to 0. imagematrix (ndarray) = matrix of the image with values either 0 of 255.
     """
     global primaryFilterTreshold
     array = []
@@ -41,14 +33,8 @@ def retrieveCraterClusters(array):
     Uses hierarchical clustering to cluster pixels on an image that have values 0
     assigned to them.
 
-    Parameter
-    ---------
-    array (list) = list of all the points that have value 0 assigned to them
-
-    Return
-    ------
-    sortedcluster = hashmap of all the clusters sorted by index.
-
+    :param array: list of all the points that have value 0 assigned to them.
+    :return: hashmap of all the clusters sorted by index.
     """
     mat = np.array(array)
     thresh = 5.5
@@ -59,7 +45,7 @@ def retrieveCraterClusters(array):
             sortedclusters[clusters[i]].append(mat[i])
         else:
             sortedclusters[clusters[i]] = [mat[i]]
-    sortedclusters = {k: v for k, v in sortedclusters.iteritems() if len(v) > 8}
+    sortedclusters = {k: v for k, v in sortedclusters.iteritems() if len(v) > 12}
     # ### Uncomment this section to plot the clusters.
     # mat = []
     # map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
@@ -68,6 +54,12 @@ def retrieveCraterClusters(array):
     return sortedclusters
 
 def reIndexCenterPoints(centerpoints):
+    """
+    Helper method to rearrange missing cluster points in the given hashmap.
+
+    :param centerpoints: All the centerpoints of the craters in an image that needs sorting.
+    :return: sorted cluster points.
+    """
     counter = 1
     sortedcenterpoints = {}
     for (k, v) in centerpoints.items():
@@ -77,6 +69,14 @@ def reIndexCenterPoints(centerpoints):
 
 
 def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
+    """
+    Processes the clusters and returns list of all the centerpoints of the craters found in an image.
+
+    :param sortedclusters: Clusters found on a the image
+    :param imagematrix: original image in matrix form
+    :return: return all the centerpoints and initial diameters of the
+    """
+
     centerpoints = {}
     diameters = {}
     for (k, v) in sortedclusters.items():
@@ -89,7 +89,8 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
     return reIndexCenterPoints(centerpoints), diameters
 
 def retrieveCraterCenterpointsAndDiameters(im):
-    array, imagematrix = preprocessor.applyPrimaryIlluminationFilter(im)
-    sortedclusters = preprocessor.retrieveCraterClusters(array)
+    array, imagematrix = applyPrimaryIlluminationFilter(im)
+    sortedclusters = retrieveCraterClusters(array)
     centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    # ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
     return centerpoints

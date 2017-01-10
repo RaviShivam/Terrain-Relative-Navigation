@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 from PIL import ImageDraw
 
+import Preprocessor as preprocessor
 import shownp as viewer
 import CraterDetector as craterDetector
 
@@ -31,7 +32,9 @@ def drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftp
 
 def locateDescentImageInReferenceImage(imagename):
     allPossibleCombinations = viewer.loadData("combinations")
-    reference_catalogue = viewer.loadData("referenceCatalogue")
+    # reference_catalogue = viewer.loadData("referenceCatalogue")
+    centerpoints = viewer.loadData("addfile")
+    # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
     im = Image.open(imagename)
     descentImageCatalogue = craterDetector.retrieveCraterCenterpointsAndDiameters(im)
     verificationcrater = descentImageCatalogue[3]
@@ -39,7 +42,7 @@ def locateDescentImageInReferenceImage(imagename):
     referencecrater = 0
     for (k,values) in allPossibleCombinations.items():
         if (isSubsetOf(smallSet, values, 0.1)):
-            referencecrater = reference_catalogue[k]
+            referencecrater = centerpoints[k]
             break
     # s = verificationcrater[2]/referencecrater[2]
     s = 2
@@ -64,6 +67,7 @@ def isSubsetOf(smallSet, values, threshold):
                 break;
         if not(vectorequal):
             break;
+    print matchesfound
     if (matchesfound == len(smallSet)):
         return True
     else:

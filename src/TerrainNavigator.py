@@ -20,6 +20,15 @@ def oneCombinationNormVector(point, centerpoints):
     return normvectors
 
 def drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint):
+    """
+
+    :param upperleftpoint:
+    :param upperrightpoint:
+    :param lowerleftpoint:
+    :param lowerrightpoint:
+    :param middlepoint:
+    :return:
+    """
     refimage = Image.open("../TRN/ReferenceMap.ppm")
     draw = ImageDraw.Draw(refimage)
     draw.line((upperleftpoint[0], upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)

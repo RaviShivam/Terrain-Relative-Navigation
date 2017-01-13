@@ -1,10 +1,7 @@
 import numpy as np
 
-from PIL import Image
 
 import shownp as viewer
-import CraterDetector as craterDetector
-
 
 def allCombinationNormVectors(centerpoints):
     allcombinationnormvectors = {}
@@ -46,7 +43,7 @@ def extractCenterpoints(reference_catalogue):
 # testdat.append(testdat[0]*testdat[0])
 # testdat.append(testdat[1]*testdat[1])
 # network = Network([5,6,4,2],  alpha=0.1, beta=0.1, Lambda=0.9)
-# network.read_network(dir="centroid_configuration")
+# network.read_network(dir="neural_network_configuration")
 # print network.feed(testdat)*57
 
 ### Attempt for median filter#####

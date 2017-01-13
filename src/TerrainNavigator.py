@@ -8,6 +8,7 @@ import shownp as viewer
 import CraterDetector as craterDetector
 
 referenceAltitude = 20000
+referenceMap = "../data/TRN/ReferenceMap.ppm"
 
 def oneCombinationNormVector(point, centerpoints):
     normvectors = []
@@ -29,7 +30,7 @@ def drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftp
     :param middlepoint:
     :return:
     """
-    refimage = Image.open("../TRN/ReferenceMap.ppm")
+    refimage = Image.open("../data/TRN/ReferenceMap.ppm")
     draw = ImageDraw.Draw(refimage)
     draw.line((upperleftpoint[0], upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
     draw.line((upperleftpoint[0], upperleftpoint[1], lowerleftpoint[0], lowerleftpoint[1]), fill = 128, width=5)
@@ -39,10 +40,10 @@ def drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftp
     draw.line((middlepoint[0]-1, middlepoint[1], middlepoint[0]+1, middlepoint[1]), fill = 128, width= 12)
     refimage.show()
 
-def locateDescentImageInReferenceImage(imagename):
+def locateDescentImageInReferenceImage(imagename, catalogue):
+    centerpoints = viewer.loadData(catalogue)
     allPossibleCombinations = viewer.loadData("combinations")
     # reference_catalogue = viewer.loadData("referenceCatalogue")
-    centerpoints = viewer.loadData("addfile")
     # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
     im = Image.open(imagename)
     descentImageCatalogue = craterDetector.retrieveCraterCenterpointsAndDiameters(im)
@@ -62,7 +63,7 @@ def locateDescentImageInReferenceImage(imagename):
     upperrightpoint = [r[0] + (512 - v[0])/s, r[1] - v[1]/s]
     lowerleftpoint = [r[0] - v[0]/s, r[1] + (512 - v[1])/s]
     middlepoint = (upperleftpoint+lowerleftpoint+upperrightpoint+lowerrightpoint)/4
-
+    print middlepoint
     drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint)
 
 def isSubsetOf(smallSet, values, threshold):

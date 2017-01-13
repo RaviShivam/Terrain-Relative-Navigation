@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.cluster.hierarchy as hcluster
 import shownp as viewer
-import EllipseFitter as ellipsefitter
 
 primaryFilterTreshold = 120
 

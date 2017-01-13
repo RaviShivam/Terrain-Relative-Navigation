@@ -13,8 +13,8 @@ for it in range(0,20000):
     for i in range(0,len(intrainingdata)):
         network.train(intrainingdata[i], normaloutdata[i])
 
-# network.save_network(dir="centroid_configuration")
+# network.save_network(dir="neural_network_configuration")
 
-network.read_network(dir="centroid_configuration")
+network.read_network(dir="neural_network_configuration")
 
 print network.feed(intrainingdata[1])*57

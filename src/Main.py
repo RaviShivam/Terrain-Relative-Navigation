@@ -2,11 +2,12 @@ from PIL import Image
 
 import shownp as viewer
 import Preprocessor as preprocessor
-import TerrainNavigator as navigator
+from TerrainNavigator import Navigator
 import CraterDetector as craterdetector
 
+referenceAltitude = 2000
+referenceMap = "ReferenceMap.ppm"
 referenceCatalogue = "finalReferenceCatalogue"
-referenceCombinations = "combinations"
 
 # centers = craterdetector.retrieveCraterCenterpointsAndDiameters(Image.open("../TRN/ReferenceMap.ppm"))
 # add = {}
@@ -15,5 +16,6 @@ referenceCombinations = "combinations"
 #
 # preprocessor.preprocessReferenceImage("finalReferenceCatalogue", referenceCombinations)
 
-navigator.locateDescentImageInReferenceImage("../data/TRN/Scene1.ppm", referenceCatalogue)
+navigator = Navigator(referenceAltitude, referenceMap, referenceCatalogue)
+navigator.locateDescentImageInReferenceImage("../data/TRN/Scene1.ppm")
 

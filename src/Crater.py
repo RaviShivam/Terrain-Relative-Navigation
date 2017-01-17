@@ -1,4 +1,8 @@
 
+
+"""
+Class for storing data on a certain crater.
+"""
 class Crater:
     def __init__(self, id, centerpoint, diameter):
         self.id = id

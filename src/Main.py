@@ -17,5 +17,5 @@ referenceCatalogue = "finalReferenceCatalogue"
 # preprocessor.preprocessReferenceImage("finalReferenceCatalogue", referenceCombinations)
 
 navigator = Navigator(referenceAltitude, referenceMap, referenceCatalogue)
-navigator.locateDescentImageInReferenceImage("../data/TRN/Scene1.ppm")
+navigator.locateDescentImageInReferenceImage("../data/TRN/Scene2.ppm")
 

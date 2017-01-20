@@ -4,6 +4,12 @@ import numpy as np
 import shownp as viewer
 
 def allCombinationNormVectors(centerpoints):
+    """
+    Brute force calculations of every existing combinations of unit vectors in the catalogue.
+    This method is meant to be private and not be accessed by method outside this module.
+    :param centerpoints: Positions of all craters in the reference image
+    :return: hashmap containing all the crater ids as key and with value of list indicating the unit vectors.
+    """
     allcombinationnormvectors = {}
     for (k, point) in centerpoints.items():
         allcombinationnormvectors[k] = []
@@ -15,15 +21,18 @@ def allCombinationNormVectors(centerpoints):
                 allcombinationnormvectors[k].append(vect)
     return allcombinationnormvectors
 
-def retrievAllNormVectorsFromReference(catalogue):
+def preprocessReferenceImage(catalogue, combinations):
+    """
+    Loads data from a given catalogue file and computes the combinations of unit vectors of each crater.
+    :param catalogue: String indicating which file to load the data catalogue from.
+    :param combinations: String to store the found combinations in.
+    :return: None
+    """
     referenceCatolog = viewer.loadData(catalogue)
     centerpoints = {}
     # map(lambda (k, v): centerpoints.update({k: v.centerpoint}), referenceCatolog.items())
     map(lambda (k, v): centerpoints.update({k: v}), referenceCatolog.items())
-    return allCombinationNormVectors(centerpoints)
-
-def preprocessReferenceImage(catalogue, combinations):
-    allPossibleCombinations = retrievAllNormVectorsFromReference(catalogue)
+    allPossibleCombinations = allCombinationNormVectors(centerpoints)
     viewer.saveData(allPossibleCombinations, combinations)
 
 

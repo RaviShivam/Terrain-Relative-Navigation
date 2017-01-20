@@ -1,8 +1,39 @@
 import numpy as np
 import scipy.cluster.hierarchy as hcluster
+from PIL import Image
+from PIL import ImageChops
+from PIL import ImageDraw
+from scipy import ndimage
+
 import shownp as viewer
+from Crater import ClusterCrater
 
 primaryFilterTreshold = 120
+secondaryFilterThreshold = 240
+
+def secondaryIlluminationFilter(im):
+    """
+    Uses predefined threshold to filter out pixels with lower gray-scale value
+
+    [1] All gray-scale values lower than a threshold are set to 0
+    [2] All gray-scale values higher than a threshold are set to 255 (max)
+
+    :param im: The image file that needs to be filtered.
+    :return: array (list) = list of all the pixels set to 0. imagematrix (ndarray) = matrix of the image with values either 0 of 255.
+    """
+    global secondaryFilterThreshold
+    array = []
+    imagematrix = viewer.RGBToGray(np.asarray(im))
+    for i in range(0, imagematrix.shape[0] - 1):
+        for j in range(0, imagematrix.shape[1] - 1):
+            if imagematrix[i, j] > secondaryFilterThreshold:
+                imagematrix[i, j] = 255
+                array.append([i, j])
+            else:
+                imagematrix[i, j] = 0
+    med = ndimage.median_filter(imagematrix, 6)
+    # viewer.showGray(med)
+    return array, imagematrix
 
 def applyPrimaryIlluminationFilter(im):
     """
@@ -27,6 +58,7 @@ def applyPrimaryIlluminationFilter(im):
     # viewer.showGray(imagematrix)
     return array, imagematrix
 
+
 def retrieveCraterClusters(array):
     """
     Uses hierarchical clustering to cluster pixels on an image that have values 0
@@ -45,17 +77,18 @@ def retrieveCraterClusters(array):
         else:
             sortedclusters[clusters[i]] = [mat[i]]
     sortedclusters = {k: v for k, v in sortedclusters.iteritems() if len(v) > 12}
-    # ### Uncomment this section to plot the clusters.
+    ### Uncomment this section to plot the clusters.
     # mat = []
     # map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
     # viewer.plotClusters(mat)
-    # ###
+    ###
+    print len(sortedclusters)
     return sortedclusters
 
 def reIndexCenterPoints(centerpoints):
     """
     Helper method to rearrange missing cluster points in the given hashmap.
-
+    This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
     :param centerpoints: All the centerpoints of the craters in an image that needs sorting.
     :return: sorted cluster points.
     """
@@ -87,9 +120,51 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
         diameters[k] = diameter
     return reIndexCenterPoints(centerpoints), diameters
 
+
 def retrieveCraterCenterpointsAndDiameters(im):
+    """
+    This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
+    :param im:
+    :return:
+    """
     array, imagematrix = applyPrimaryIlluminationFilter(im)
     sortedclusters = retrieveCraterClusters(array)
     centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
     # ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
     return centerpoints
+
+def trim(im):
+    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
+    diff = ImageChops.difference(im, bg)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+
+
+def correlateClusters(clusters1, clusters2, draw):
+    clusters1 = map(lambda x: ClusterCrater(x[0], x[1]), clusters1.items())
+    clusters2 = map(lambda x: ClusterCrater(x[0], x[1]), clusters2.items())
+    # for cluster in clusters1:
+    cluster = clusters1[4]
+    for secondcluster in clusters2:
+        draw.line((cluster.centerpoint[0], cluster.centerpoint[1], secondcluster.centerpoint[0], secondcluster.centerpoint[1]), fill = 128, width=1)
+
+
+
+
+def tryDoubleFilter():
+    im = Image.open("../data/TRN/ReferenceMap.ppm")
+    # font = ImageFont.truetype("sans-serif.ttf", 14)
+    im = trim(im)
+    draw = ImageDraw.Draw(im)
+    array1, med1 = applyPrimaryIlluminationFilter(im)
+    array2, med2 = secondaryIlluminationFilter(im)
+    cluster1 = retrieveCraterClusters(array1)
+    cluster2 = retrieveCraterClusters(array2)
+    correlateClusters(cluster1, cluster2, draw)
+    im.show()
+
+tryDoubleFilter()
+
+

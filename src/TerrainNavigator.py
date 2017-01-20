@@ -9,13 +9,26 @@ import CraterDetector as craterDetector
 
 class Navigator:
     def __init__(self, referenceAltitude, referenceMap, referenceCatalogue):
+        """
+
+        :param referenceAltitude:
+        :param referenceMap:
+        :param referenceCatalogue:
+        """
         self.referenceAltitude = referenceAltitude
         self.referenceMap = referenceMap
         self.referenceCatalogue = referenceCatalogue
         self.referenceCombinations = referenceCatalogue + "Combinations"
-        preprocessor.preprocessReferenceImage(referenceCatalogue, self.referenceCombinations)
+        preprocessor.preprocessReferenceImage(self.referenceCatalogue, self.referenceCombinations)
 
     def oneCombinationNormVector(self, point, centerpoints):
+        """
+
+        This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
+        :param point:
+        :param centerpoints:
+        :return:
+        """
         normvectors = []
         for (k2, point2) in centerpoints.items():
             if (point[0] == point2[0] and point[1] == point2[1]):
@@ -28,6 +41,7 @@ class Navigator:
     def drawDescentImageOnReferenceImage(self, upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint):
         """
         Draws the specified coordinates of the landers location on to the reference map.
+        This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
         :param upperleftpoint: upperleft point in the reference image
         :param upperrightpoint: upperright point in the reference image
         :param lowerleftpoint: lowerleft point in the reference image
@@ -36,6 +50,7 @@ class Navigator:
         :return: Null
         """
         refimage = Image.open("../data/TRN/ReferenceMap.ppm")
+        # font = ImageFont.truetype("sans-serif.ttf", 14)
         draw = ImageDraw.Draw(refimage)
         draw.line((upperleftpoint[0], upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
         draw.line((upperleftpoint[0], upperleftpoint[1], lowerleftpoint[0], lowerleftpoint[1]), fill = 128, width=5)
@@ -43,27 +58,15 @@ class Navigator:
         draw.line((lowerrightpoint[0], lowerrightpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
         draw.line((middlepoint[0], middlepoint[1]-1, middlepoint[0], middlepoint[1]+1), fill = 128, width= 12)
         draw.line((middlepoint[0]-1, middlepoint[1], middlepoint[0]+1, middlepoint[1]), fill = 128, width= 12)
+        text = "Middlepoint is {} and altitude is {} km".format(middlepoint, 100)
+        draw.text((0, 0), text, (20, 86, 169))
         refimage.show()
 
-    def locateDescentImageInReferenceImage(self, imagename):
-        """
-        Locates a given
-        :param imagename:
-        :param catalogue:
-        :return:
-        """
-        centerpoints = viewer.loadData(self.referenceCatalogue)
-        allPossibleCombinations = viewer.loadData(self.referenceCombinations)
-        # reference_catalogue = viewer.loadData("referenceCatalogue")
-        # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
-        im = Image.open(imagename)
-        descentImageCatalogue = craterDetector.retrieveCraterCenterpointsAndDiameters(im)
-        self.executePatternRecognition(allPossibleCombinations, centerpoints, descentImageCatalogue)
 
     def executePatternRecognition(self, allPossibleCombinations, centerpoints, descentImageCatalogue):
         """
-        This part actually executes the pattern recognition on the reference map. This method is only to be used by methods in this
-        class and not intented to be accesed arbitrarily.
+        This part actually executes the pattern recognition on the reference map.
+        This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
         :param allPossibleCombinations: Dictionary of all craters containing the relative distances to every other crater on the image
         :param centerpoints: centerpoint are the catalogued centerpoints of all the craters in the reference map
         :param descentImageCatalogue: list of all the crater centerpoints and diameters in the descent image.
@@ -89,6 +92,14 @@ class Navigator:
         return middlepoint
 
     def isSubsetOf(self, smallSet, values, threshold):
+        """
+
+        This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
+        :param smallSet:
+        :param values:
+        :param threshold:
+        :return:
+        """
         matchesfound = 0
         for vector in smallSet:
             vectorequal = False
@@ -99,15 +110,37 @@ class Navigator:
                     break;
             if not(vectorequal):
                 break;
-        print matchesfound
         if (matchesfound == len(smallSet)):
             return True
         else:
             return False
 
     def isAlmostEquals(self, vector, refvector, threshold):
+        """
+
+        This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
+        :param vector:
+        :param refvector:
+        :param threshold:
+        :return:
+        """
         if (((vector[0] - threshold < refvector[0]) and (vector[0] + threshold > refvector[0])) and
                 ((vector[1] - threshold < refvector[1]) and (vector[1] + threshold > refvector[1]))
             ): return True
         else: return False
+
+    def locateDescentImageInReferenceImage(self, imagename):
+        """
+        Locates a given
+        :param imagename:
+        :param catalogue:
+        :return:
+        """
+        centerpoints = viewer.loadData(self.referenceCatalogue)
+        allPossibleCombinations = viewer.loadData(self.referenceCombinations)
+        # reference_catalogue = viewer.loadData("referenceCatalogue")
+        # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
+        im = Image.open(imagename)
+        descentImageCatalogue = craterDetector.retrieveCraterCenterpointsAndDiameters(im)
+        self.executePatternRecognition(allPossibleCombinations, centerpoints, descentImageCatalogue)
 

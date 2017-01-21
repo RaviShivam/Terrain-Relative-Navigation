@@ -20,12 +20,10 @@ For executing the crater detection and TRN all Scene images:
 
 `_python Main.py_`
 
-For running the code simply one image:
+For executing the code on one image of choice (e.g. Scene1) issue the following command:
 
 `python Main.py Scene1`
 
-The command about will only perform the TRN on Scene
-
-To execute the program on multiple images issue the following command: 
+To execute the program on multiple images (e.g. Scene1 and Scene 3) issue the following command: 
 
 `python Main.py Scene1 Scene3`

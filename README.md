@@ -11,10 +11,21 @@ numpy, os, pickle, PIL, matplotlib and scipy.
 
 ###Execution
 This code is tested to execute successfully when launching a linux and windows terminal. 
+
 There is, however, a known issue when executing the code from a IDE like PyCharm i.e. that it does not 
  recognize the data folders.
+
 #### Terminal
 For executing the crater detection and TRN all Scene images: 
+
 `_python Main.py_`
 
+For running the code simply one image:
 
+`python Main.py Scene1`
+
+The command about will only perform the TRN on Scene
+
+To execute the program on multiple images issue the following command: 
+
+`python Main.py Scene1 Scene3`

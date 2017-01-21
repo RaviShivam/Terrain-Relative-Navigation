@@ -53,7 +53,7 @@ class Navigator:
         :param middlepoint: Exact location of the lander on the reference image.
         :return: Null
         """
-        refimage = Image.open("../data/TRN/ReferenceMap.ppm")
+        refimage = Image.open("data/TRN/ReferenceMap.ppm")
         # font = ImageFont.truetype("sans-serif.ttf", 14)
         draw = ImageDraw.Draw(refimage)
         draw.line((upperleftpoint[0], upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)

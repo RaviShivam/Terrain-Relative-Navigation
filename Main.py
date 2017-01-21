@@ -7,7 +7,7 @@ referenceAltitude = 2000
 referenceMap = "ReferenceMap.ppm"
 referenceCatalogue = "finalReferenceCatalogue"
 defaultDescentImages = ["Scene1.ppm", "Scene2.ppm", "Scene3.ppm", "Scene4.ppm"]
-defaultDataPath = "../data/TRN/"
+defaultDataPath = "data/TRN/"
 
 args = len(sys.argv)
 arguments = str(sys.argv)

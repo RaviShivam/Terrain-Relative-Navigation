@@ -2,15 +2,18 @@ import numpy as np
 
 import math
 import random
-import scipy.cluster.hierarchy as hcluster
-from PIL import Image
 from PIL import ImageDraw
-import matplotlib.pyplot as plt
 
 import shownp as viewer
 
 
 def rotatePointAround(rightpoint, middlepoint):
+    """
+
+    :param rightpoint:
+    :param middlepoint:
+    :return:
+    """
     print "rightpoint= {}, middlepoint= {}".format(rightpoint, middlepoint)
     rotationpoint = np.array([rightpoint[0] - middlepoint[0], rightpoint[1]-middlepoint[1]])
     theta = math.radians(90)

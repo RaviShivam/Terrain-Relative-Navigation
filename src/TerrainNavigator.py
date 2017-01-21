@@ -10,10 +10,13 @@ import CraterDetector as craterDetector
 class Navigator:
     def __init__(self, referenceAltitude, referenceMap, referenceCatalogue):
         """
-
-        :param referenceAltitude:
-        :param referenceMap:
-        :param referenceCatalogue:
+        Initializes an instance of Navigator object which preprocesses the referenceMap automatically.
+        By creating a Navigator object once, it makes it possible to detect consecutive images without
+        preprocessing it.
+        :param referenceAltitude: The altitude at which the reference image is given
+        :param referenceMap: The name of the reference map.
+        :param referenceCatalogue: The catalogue of the reference image. This contains all the centerpoints of all the craters
+        and their diameters.
         """
         self.referenceAltitude = referenceAltitude
         self.referenceMap = referenceMap
@@ -21,22 +24,23 @@ class Navigator:
         self.referenceCombinations = referenceCatalogue + "Combinations"
         preprocessor.preprocessReferenceImage(self.referenceCatalogue, self.referenceCombinations)
 
-    def oneCombinationNormVector(self, point, centerpoints):
+    def oneCombinationUnitVector(self, point, centerpoints):
         """
-
+        Takes one point in a given list of points and calculates all the unit vectors to the other centerpoints
+        in the list.
         This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
-        :param point:
-        :param centerpoints:
-        :return:
+        :param point: point from where all the other relative positions should be calculated
+        :param centerpoints: list of all the centpoints that needs to be processed.
+        :return: unit vectors every other centerpoint of craters in the image.
         """
-        normvectors = []
+        unitvectors = []
         for (k2, point2) in centerpoints.items():
             if (point[0] == point2[0] and point[1] == point2[1]):
                 continue
             else:
                 vect = (point2 - point) / np.linalg.norm(point2 - point)
-                normvectors.append(vect)
-        return normvectors
+                unitvectors.append(vect)
+        return unitvectors
 
     def drawDescentImageOnReferenceImage(self, upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint):
         """
@@ -73,7 +77,7 @@ class Navigator:
         :return: The approximate location of the lander on top of the referenceMap.
         """
         verificationcrater = descentImageCatalogue[3]
-        smallSet = self.oneCombinationNormVector(verificationcrater, descentImageCatalogue)
+        smallSet = self.oneCombinationUnitVector(verificationcrater, descentImageCatalogue)
         referencecrater = 0
         for (k, values) in allPossibleCombinations.items():
             if (self.isSubsetOf(smallSet, values, 0.1)):
@@ -93,12 +97,13 @@ class Navigator:
 
     def isSubsetOf(self, smallSet, values, threshold):
         """
-
+        Evaluates whether a smaller set of unit vectors is a subset of a larger set. It does this by allowing a certain error,
+        as the unit vectors in a reference image may not be exactly the same as in the detected image.
         This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
-        :param smallSet:
-        :param values:
-        :param threshold:
-        :return:
+        :param smallSet: Set containing unit vectors of a certain crater in the descent image.
+        :param values: Set containing unit vectors of a certain crater in the reference image.
+        :param threshold: Error factor that can be tolerated. If the error is higher than this, the vectors are not the same.
+        :return: If the smaller set is identified to be a subset of the larger set, it returs true, else it returns false.
         """
         matchesfound = 0
         for vector in smallSet:
@@ -117,12 +122,13 @@ class Navigator:
 
     def isAlmostEquals(self, vector, refvector, threshold):
         """
-
+        Compares 2 different unit vector to verify whether they have almost the same direction. This is done by including
+        a small error factor which allows for flexibility.
         This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
-        :param vector:
-        :param refvector:
-        :param threshold:
-        :return:
+        :param vector: First vector to be compared.
+        :param refvector: Second vector with which the first vector is compared to check for equality.
+        :param threshold: Error factor that can be tolerated. If the error is higher than this, the vectors are not the same.
+        :return: If the smaller set is identified to be a subset of the larger set, it returs true, else it returns false.
         """
         if (((vector[0] - threshold < refvector[0]) and (vector[0] + threshold > refvector[0])) and
                 ((vector[1] - threshold < refvector[1]) and (vector[1] + threshold > refvector[1]))
@@ -131,10 +137,10 @@ class Navigator:
 
     def locateDescentImageInReferenceImage(self, imagename):
         """
-        Locates a given
-        :param imagename:
-        :param catalogue:
-        :return:
+        This method uses the preprocessed referencemap to locate the descent image. It provides the coordinates
+        and altitude on the image produced.
+        :param imagename: the descent image which needs to be located in the reference map.
+        :return: None
         """
         centerpoints = viewer.loadData(self.referenceCatalogue)
         allPossibleCombinations = viewer.loadData(self.referenceCombinations)

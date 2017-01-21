@@ -18,7 +18,7 @@ There is, however, a known issue when executing the code from a IDE like PyCharm
 #### Terminal
 For executing the crater detection and TRN all Scene images: 
 
-`_python Main.py_`
+`python Main.py`
 
 For executing the code on one image of choice (e.g. Scene1) issue the following command:
 
@@ -27,3 +27,14 @@ For executing the code on one image of choice (e.g. Scene1) issue the following 
 To execute the program on multiple images (e.g. Scene1 and Scene 3) issue the following command: 
 
 `python Main.py Scene1 Scene3`
+
+#### Execution from IDE
+For execution from an IDE a slight manual modification in the Main.py file is required. Simply change
+the line: 
+
+`datapath = "data/"`
+
+to 
+
+`datapath = "../data/"`
+

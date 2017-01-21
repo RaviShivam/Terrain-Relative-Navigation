@@ -21,19 +21,19 @@ def allCombinationNormVectors(centerpoints):
                 allcombinationnormvectors[k].append(vect)
     return allcombinationnormvectors
 
-def preprocessReferenceImage(catalogue, combinations):
+def preprocessReferenceImage(catalogue, combinations, datapath):
     """
     Loads data from a given catalogue file and computes the combinations of unit vectors of each crater.
     :param catalogue: String indicating which file to load the data catalogue from.
     :param combinations: String to store the found combinations in.
     :return: None
     """
-    referenceCatolog = viewer.loadData(catalogue)
+    referenceCatolog = viewer.loadData(datapath, catalogue)
     centerpoints = {}
     # map(lambda (k, v): centerpoints.update({k: v.centerpoint}), referenceCatolog.items())
     map(lambda (k, v): centerpoints.update({k: v}), referenceCatolog.items())
     allPossibleCombinations = allCombinationNormVectors(centerpoints)
-    viewer.saveData(allPossibleCombinations, combinations)
+    viewer.saveData(datapath, allPossibleCombinations, combinations)
 
 
 def extractCenterpoints(reference_catalogue):

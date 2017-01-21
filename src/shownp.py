@@ -58,16 +58,16 @@ def showGray(img):
     plt.show()
 
 
-def saveData(allCombinations, file):
-    dir_path = os.path.join(os.curdir, "data/reference_preprocess")
+def saveData(datapath, allCombinations, file):
+    dir_path = os.path.join(os.curdir, datapath + "reference_preprocess")
     combinationsfile = os.path.join(dir_path, file)
     combinationdata = pickle.dumps(allCombinations, protocol=0)
     f = open(combinationsfile, "wb")
     f.write(combinationdata)
     f.close()
 
-def loadData(file):
-    f = open(os.path.join(os.curdir, "data/reference_preprocess", file), "rb")
+def loadData(datapath, file):
+    f = open(os.path.join(os.curdir, datapath + "reference_preprocess", file), "rb")
     layers_data = f.read()
     return pickle.loads(layers_data)
 

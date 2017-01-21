@@ -8,7 +8,7 @@ import shownp as viewer
 import CraterDetector as craterDetector
 
 class Navigator:
-    def __init__(self, referenceAltitude, referenceMap, referenceCatalogue):
+    def __init__(self, referenceAltitude, referenceMap, referenceCatalogue, datapath):
         """
         Initializes an instance of Navigator object which preprocesses the referenceMap automatically.
         By creating a Navigator object once, it makes it possible to detect consecutive images without
@@ -18,11 +18,12 @@ class Navigator:
         :param referenceCatalogue: The catalogue of the reference image. This contains all the centerpoints of all the craters
         and their diameters.
         """
+        self.datapath = datapath
         self.referenceAltitude = referenceAltitude
         self.referenceMap = referenceMap
         self.referenceCatalogue = referenceCatalogue
         self.referenceCombinations = referenceCatalogue + "Combinations"
-        preprocessor.preprocessReferenceImage(self.referenceCatalogue, self.referenceCombinations)
+        preprocessor.preprocessReferenceImage(self.referenceCatalogue, self.referenceCombinations, datapath)
 
     def oneCombinationUnitVector(self, point, centerpoints):
         """
@@ -53,7 +54,7 @@ class Navigator:
         :param middlepoint: Exact location of the lander on the reference image.
         :return: Null
         """
-        refimage = Image.open("data/TRN/ReferenceMap.ppm")
+        refimage = Image.open(self.datapath + "TRN/ReferenceMap.ppm")
         # font = ImageFont.truetype("sans-serif.ttf", 14)
         draw = ImageDraw.Draw(refimage)
         draw.line((upperleftpoint[0], upperleftpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
@@ -142,8 +143,8 @@ class Navigator:
         :param imagename: the descent image which needs to be located in the reference map.
         :return: None
         """
-        centerpoints = viewer.loadData(self.referenceCatalogue)
-        allPossibleCombinations = viewer.loadData(self.referenceCombinations)
+        centerpoints = viewer.loadData(self.datapath, self.referenceCatalogue)
+        allPossibleCombinations = viewer.loadData(self.datapath, self.referenceCombinations)
         # reference_catalogue = viewer.loadData("referenceCatalogue")
         # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
         im = Image.open(imagename)

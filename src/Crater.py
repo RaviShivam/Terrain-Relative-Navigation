@@ -25,7 +25,6 @@ class ClusterCrater:
             centerpoint[0] = centerpoint[0] + point[0]
             centerpoint[1] = centerpoint[1] + point[1]
         self.centerpoint = map(lambda x: x/len(points), centerpoint)
-        print self.centerpoint
 
     def distanceTo(self, secondcluster):
         dist = np.linalg.norm(np.array(self.centerpoint) - np.array(secondcluster.centerpoint))

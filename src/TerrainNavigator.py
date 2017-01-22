@@ -1,3 +1,4 @@
+import random
 from PIL import Image
 
 import numpy as np
@@ -43,7 +44,7 @@ class Navigator:
                 unitvectors.append(vect)
         return unitvectors
 
-    def drawDescentImageOnReferenceImage(self, upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint):
+    def drawDescentImageOnReferenceImage(self, upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint, middlepoint, s):
         """
         Draws the specified coordinates of the landers location on to the reference map.
         This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
@@ -63,38 +64,67 @@ class Navigator:
         draw.line((lowerrightpoint[0], lowerrightpoint[1], upperrightpoint[0], upperrightpoint[1]), fill = 128, width=5)
         draw.line((middlepoint[0], middlepoint[1]-1, middlepoint[0], middlepoint[1]+1), fill = 128, width= 12)
         draw.line((middlepoint[0]-1, middlepoint[1], middlepoint[0]+1, middlepoint[1]), fill = 128, width= 12)
-        text = "Middlepoint is {} and altitude is {} km".format(middlepoint, 100)
+        text = "The lander is located at {} and it's altitude is {} km".format(middlepoint, round((1/s)*20, 2))
         draw.text((0, 0), text, (20, 86, 169))
         refimage.show()
 
 
-    def executePatternRecognition(self, allPossibleCombinations, centerpoints, descentImageCatalogue):
+    def executePatternRecognition(self, allPossibleCombinations, referenceCraters, descentImageCraters):
         """
         This part actually executes the pattern recognition on the reference map.
         This method is only to be accessed by methods in this module and not intented to be accesed arbitrarily.
         :param allPossibleCombinations: Dictionary of all craters containing the relative distances to every other crater on the image
-        :param centerpoints: centerpoint are the catalogued centerpoints of all the craters in the reference map
-        :param descentImageCatalogue: list of all the crater centerpoints and diameters in the descent image.
+        :param referenceCraters: centerpoint are the catalogued centerpoints of all the craters in the reference map
+        :param descentImageCraters: list of all the crater centerpoints and diameters in the descent image.
         :return: The approximate location of the lander on top of the referenceMap.
         """
-        verificationcrater = descentImageCatalogue[3]
-        smallSet = self.oneCombinationUnitVector(verificationcrater, descentImageCatalogue)
-        referencecrater = 0
-        for (k, values) in allPossibleCombinations.items():
-            if (self.isSubsetOf(smallSet, values, 0.1)):
-                referencecrater = centerpoints[k]
-                break
-        s = 2
-        r = np.array([referencecrater[0], referencecrater[1]])
-        v = np.array([verificationcrater[0], verificationcrater[1]])
-        upperleftpoint = r - (v / s)
-        lowerrightpoint = [r[0] + (512 - v[0]) / s, r[1] + (512 - v[1]) / s]
-        upperrightpoint = [r[0] + (512 - v[0]) / s, r[1] - v[1] / s]
-        lowerleftpoint = [r[0] - v[0] / s, r[1] + (512 - v[1]) / s]
+        referenceCenterPoints = preprocessor.extractCenterpoints(referenceCraters)
+        descentImageCenterPoints = preprocessor.extractCenterpoints(descentImageCraters)
+        # verificationcraters = [random.choice(list(descentImageCraters.items())) for k in range(0,3)]
+        verificationcraters = [list(descentImageCraters.items()[k]) for k in [1,3,4]]
+        foundreferencecraters = []
+        scale = 0
+        for descentkey, crater in verificationcraters:
+            smallSet = self.oneCombinationUnitVector(crater.centerpoint, descentImageCenterPoints)
+            for (referencekey, values) in allPossibleCombinations.items():
+                if (self.isSubsetOf(smallSet, values, 0.1)):
+                    foundreferencecraters.append(referenceCenterPoints[referencekey])
+                    scale = scale + descentImageCraters[descentkey].diameter/referenceCraters[referencekey].diameter
+                    break
+        s = scale/3
+        lowerleftpoint, lowerrightpoint, upperleftpoint, upperrightpoint = self.findViewingRectangle(
+            foundreferencecraters, s, verificationcraters)
         middlepoint = (upperleftpoint + lowerleftpoint + upperrightpoint + lowerrightpoint) / 4
         self.drawDescentImageOnReferenceImage(upperleftpoint, upperrightpoint, lowerleftpoint, lowerrightpoint,
-                                              middlepoint)
+                                                  middlepoint, s)
         return middlepoint
+
+    def findViewingRectangle(self, foundreferencecraters, s, verificationcraters):
+        """
+        Method for finding the drawing rectangle.
+        :param foundreferencecraters:
+        :param s:
+        :param verificationcraters:
+        :return:
+        """
+        upperleftpoint = np.array([0,0])
+        lowerrightpoint = np.array([0,0])
+        upperrightpoint = np.array([0,0])
+        lowerleftpoint = np.array([0,0])
+        for i in range(0, 3):
+            verificationcrater = verificationcraters[i][1].centerpoint
+            referencecrater = foundreferencecraters[i]
+            r = np.array([referencecrater[0], referencecrater[1]])
+            v = np.array([verificationcrater[0], verificationcrater[1]])
+            upperleftpoint = upperleftpoint + (r - (v / s))
+            lowerrightpoint = lowerrightpoint + [r[0] + (512 - v[0]) / s, r[1] + (512 - v[1]) / s]
+            upperrightpoint = upperrightpoint + [r[0] + (512 - v[0]) / s, r[1] - v[1] / s]
+            lowerleftpoint = lowerleftpoint + [r[0] - v[0] / s, r[1] + (512 - v[1]) / s]
+        upperrightpoint = upperrightpoint/3
+        lowerrightpoint = lowerrightpoint/3
+        upperleftpoint = upperleftpoint/3
+        lowerleftpoint = lowerleftpoint/3
+        return lowerleftpoint, lowerrightpoint, upperleftpoint, upperrightpoint
 
     def isSubsetOf(self, smallSet, values, threshold):
         """
@@ -143,11 +173,11 @@ class Navigator:
         :param imagename: the descent image which needs to be located in the reference map.
         :return: None
         """
-        centerpoints = viewer.loadData(self.datapath, self.referenceCatalogue)
+        referenceCraters = viewer.loadData(self.datapath, self.referenceCatalogue)
         allPossibleCombinations = viewer.loadData(self.datapath, self.referenceCombinations)
         # reference_catalogue = viewer.loadData("referenceCatalogue")
         # centerpoints = preprocessor.extractCenterpoints(reference_catalogue)
         im = Image.open(imagename)
-        descentImageCatalogue = craterDetector.retrieveCraterCenterpointsAndDiameters(im)
-        self.executePatternRecognition(allPossibleCombinations, centerpoints, descentImageCatalogue)
+        descentImageCraters = craterDetector.extractCraters(im)
+        self.executePatternRecognition(allPossibleCombinations, referenceCraters, descentImageCraters)
 

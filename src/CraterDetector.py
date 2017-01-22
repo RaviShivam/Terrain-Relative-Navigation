@@ -3,10 +3,12 @@ import scipy.cluster.hierarchy as hcluster
 from PIL import Image
 from PIL import ImageChops
 from PIL import ImageDraw
-from scipy import ndimage
+from scipy import ndimage, random
 
 import shownp as viewer
+import EllipseFitter as ellipsefitter
 from Crater import ClusterCrater
+from Crater import Crater
 
 primaryFilterTreshold = 120
 secondaryFilterThreshold = 240
@@ -59,7 +61,7 @@ def retrieveCraterClusters(array):
     # map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
     # viewer.plotClusters(mat)
     ###
-    return sortedclusters
+    return reIndexCenterPoints(sortedclusters)
 
 def reIndexCenterPoints(centerpoints):
     """
@@ -75,7 +77,6 @@ def reIndexCenterPoints(centerpoints):
         counter += 1
     return sortedcenterpoints
 
-
 def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
     """
     Processes the clusters and returns list of all the centerpoints of the craters found in an image.
@@ -83,19 +84,18 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
     :param imagematrix: original image in matrix form
     :return: return all the centerpoints and initial diameters of the
     """
-    centerpoints = {}
-    diameters = {}
+    craters = {}
     for (k, v) in sortedclusters.items():
         edgecluster = viewer.findEdges(v, imagematrix)
         distance, fartestpoints = viewer.searchForFartestPoint(edgecluster) #Search for fartestpoint in cluster for diameter determination.
         diameter = 1.35 * distance
         x, y = viewer.calculateMiddlePoint(diameter, fartestpoints)
-        centerpoints[k] = np.array([x, y])
-        diameters[k] = diameter
-    return reIndexCenterPoints(centerpoints), diameters
+        centerpoint = np.array([x, y])
+        craters[k] = Crater(k, centerpoint, diameter)
+    return craters
 
 
-def retrieveCraterCenterpointsAndDiameters(im):
+def extractCraters(im):
     """
     This method is only to be accessed by methods in this module and not intented to be accessed arbitrarily.
     :param im: image that needs to be processed and retrieve respective diameters.
@@ -103,9 +103,9 @@ def retrieveCraterCenterpointsAndDiameters(im):
     """
     array, imagematrix = applyPrimaryIlluminationFilter(im)
     sortedclusters = retrieveCraterClusters(array)
-    centerpoints, diameters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
+    craters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
     # ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
-    return centerpoints
+    return craters
 
 
 

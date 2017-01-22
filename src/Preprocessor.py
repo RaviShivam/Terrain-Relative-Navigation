@@ -28,17 +28,16 @@ def preprocessReferenceImage(catalogue, combinations, datapath):
     :param combinations: String to store the found combinations in.
     :return: None
     """
-    referenceCatolog = viewer.loadData(datapath, catalogue)
+    referenceCatalogueCenterpoints = extractCenterpoints(viewer.loadData(datapath, catalogue))
     centerpoints = {}
-    # map(lambda (k, v): centerpoints.update({k: v.centerpoint}), referenceCatolog.items())
-    map(lambda (k, v): centerpoints.update({k: v}), referenceCatolog.items())
+    map(lambda (k, v): centerpoints.update({k: v}), referenceCatalogueCenterpoints.items())
     allPossibleCombinations = allCombinationNormVectors(centerpoints)
     viewer.saveData(datapath, allPossibleCombinations, combinations)
 
 
-def extractCenterpoints(reference_catalogue):
+def extractCenterpoints(craters):
     centerpoints = {}
-    map(lambda (key, crater): centerpoints.update({key:crater.centerpoint}), reference_catalogue.items())
+    map(lambda (key, crater): centerpoints.update({key:crater.centerpoint}), craters.items())
     return centerpoints
 
 

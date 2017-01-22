@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 from PIL import ImageDraw
 
-insert = 3
+def reverseCoordinates(point):
+    point = [point[1], point[0]]
+    return point
+
 def searchForFartestPoint(points):
     maxdis = 0;
     farpoints = [points[0],points[1]]
@@ -78,9 +81,9 @@ def plotClusters(mat):
     plt.show()
 
 def calculateMiddlePoint(diameter, fartestpoints):
-    y = ((fartestpoints[0][0] + fartestpoints[1][0]) / 2) - diameter / 8
-    x = ((fartestpoints[0][1] + fartestpoints[1][1]) / 2) + diameter / 4
-    return x, y
+    x = ((fartestpoints[0][0] + fartestpoints[1][0]) / 2) - diameter / 8
+    y = ((fartestpoints[0][1] + fartestpoints[1][1]) / 2) + diameter / 4
+    return y, x
 
 def draw_ellipse(image, bounds, width=1, outline='red', antialias=4):
     """Improved ellipse drawing function, based on PIL.ImageDraw."""

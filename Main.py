@@ -3,7 +3,7 @@ from src.TerrainNavigator import Navigator
 
 referenceAltitude = 2000
 
-datapath = "../data/"
+datapath = "data/"
 referenceMap = "ReferenceMap.ppm"
 referenceCatalogue = "finalReferenceCraterData"
 defaultDescentImages = ["Scene1.ppm", "Scene2.ppm", "Scene3.ppm", "Scene4.ppm"]

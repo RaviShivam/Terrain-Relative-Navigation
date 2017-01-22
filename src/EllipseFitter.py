@@ -6,6 +6,10 @@ from PIL import ImageDraw
 
 import shownp as viewer
 
+"""
+Started on this code but could not get it to work.
+"""
+
 def rotateAroundOrigin(origin, point, angle):
     """
     Rotate a point counterclockwise by a given angle around a given origin.

@@ -49,7 +49,6 @@ def drawFoundCraters(sortedclusters, imagematrix, im):
         semiMajorAxis = 1.34 * distance
         a = semiMajorAxis / 2
         x, y = viewer.calculateMiddlePoint(semiMajorAxis, fartestpoints)
-        b = retrieveSemiMinorAxis(fartestpoints, (x,y), draw)
         bbox = (x - a, y - a, x + a, y + a)
         im = viewer.draw_ellipse(im, bbox, width=4) #Thick bounds
         # draw.ellipse(bbox, fill=None, outline=400) #less thick bounds

@@ -16,7 +16,8 @@ There is, however, a known issue when executing the code from a IDE like PyCharm
  recognize the data folders.
 
 #### Terminal
-For executing the crater detection and TRN all Scene images: 
+*This program is run via the terminal by default*
+For executing the entire program and viewing the crater detection and TRN on all the images, issue the following command: 
 
 `python Main.py`
 
@@ -37,4 +38,14 @@ the line:
 to 
 
 `datapath = "../data/"`
+
+For excecution of crater detection algorithms on images first import the crater detection module: 
+
+`import src.CraterDetector as craterdetector`
+
+and then one can use crater detection on the desired image:
+
+`craterdetector.extractCratersWithImage(Image.open(datapath + "TRN/Angle1.ppm"))`
+
+Note: the script above shows the result in an image. Using extract crater will not show any visuals.
 

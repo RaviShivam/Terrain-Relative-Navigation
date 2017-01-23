@@ -107,9 +107,15 @@ def extractCraters(im):
     # ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
     return craters
 
-
-
-
+def extractCratersWithImage(im):
+    """
+    This method is only to be accessed by methods in this module and not intented to be accessed arbitrarily.
+    :param im: image that needs to be processed and retrieve respective diameters.
+    :return: centerpoint and the diameters of all the craters in the given image.
+    """
+    array, imagematrix = applyPrimaryIlluminationFilter(im)
+    sortedclusters = retrieveCraterClusters(array)
+    ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
 
 """
 This part of the code is NOT used for the actual program. Rather, was tried to be implemented but did not succeed.

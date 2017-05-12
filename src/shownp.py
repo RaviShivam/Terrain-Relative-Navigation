@@ -34,8 +34,8 @@ def findClosestPointTo(point, edgecluster):
 
 
 def drawpoint(draw, point, width):
-    draw.line((point[0], point[1] - 1, point[0], point[1] + 1), fill = 128, width = width)
-    draw.line((point[0] - 1, point[1], point[0] + 1, point[1]), fill = 128, width = width)
+    draw.line((point[0], point[1] - 1, point[0], point[1] + 1),outline='#31ff00', width = width)
+    draw.line((point[0] - 1, point[1], point[0] + 1, point[1]),outline='#31ff00', width = width)
 
 def findEdges(points, imagematrix):
     edges = []
@@ -76,16 +76,26 @@ def loadData(datapath, file):
 
 def plotClusters(mat):
     mat = np.array(mat)
-    plt.scatter(mat[:, 0], mat[:, 1])
-    plt.axis("equal")
-    plt.show()
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(4,4)
+    ax = plt.Axes(fig, [0.,0.,1.,1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    plt.scatter(mat[:, 0], mat[:, 1], edgecolors='none')
+    # plt.gca().invert_yaxis()
+    # plt.gca().invert_xaxis()
+    plt.savefig('./method2.png', dpi = 128)
+
+    # plt.savefig("method2.png", bbox_inches= 'tight', padding_inches=0)
+    # plt.show()
 
 def calculateMiddlePoint(diameter, fartestpoints):
     x = ((fartestpoints[0][0] + fartestpoints[1][0]) / 2) - diameter / 8
     y = ((fartestpoints[0][1] + fartestpoints[1][1]) / 2) + diameter / 4
     return y, x
 
-def draw_ellipse(image, bounds, width=1, outline='red', antialias=4):
+
+def draw_ellipse(image, bounds, width=0.1, outline='#31ff00', antialias=2):
     """Improved ellipse drawing function, based on PIL.ImageDraw."""
 
     # Use a single channel image (mode='L') as mask.
@@ -108,3 +118,5 @@ def draw_ellipse(image, bounds, width=1, outline='red', antialias=4):
     # paste outline color to input image through the mask
     image.paste(outline, mask=mask)
     return image
+
+

@@ -37,11 +37,13 @@ def retrieveSemiMinorAxis(fartestpoints, middlepoint, draw):
 
 
 def drawFoundCraters(sortedclusters, imagematrix, im):
-    draw = ImageDraw.Draw(im)
-    # edges = []
+    # draw = ImageDraw.Draw(im)
+    mat = []
+    edgeclusters = {}
     for (k, v) in sortedclusters.items():
     # v = sortedclusters[1]
         edgecluster = viewer.findEdges(v, imagematrix) #Retrieves map of edgepoints in each cluster.
+        edgeclusters[k] = edgecluster
         # map(lambda x: viewer.drawpoint(draw, (x[1], x[0]), 6), edgecluster)
         distance, fartestpoints = viewer.searchForFartestPoint(edgecluster) #Search for fartestpoint in cluster for diameter determination.
         # viewer.drawpoint(draw, (fartestpoints[0][1],fartestpoints[0][0]), 6)
@@ -49,13 +51,22 @@ def drawFoundCraters(sortedclusters, imagematrix, im):
         semiMajorAxis = 1.34 * distance
         a = semiMajorAxis / 2
         x, y = viewer.calculateMiddlePoint(semiMajorAxis, fartestpoints)
-        bbox = (x - a, y - a, x + a, y + a)
-        im = viewer.draw_ellipse(im, bbox, width=4) #Thick bounds
-        # draw.ellipse(bbox, fill=None, outline=400) #less thick bounds
 
-    # viewer.plotClusters(edges)
-    # del draw
+        bbox = (x - a, y - a, x + a, y + a)
+        im = viewer.draw_ellipse(im, bbox, width=2) #Thick bounds
+        im = draw_thick_point(im, [x,y])
+    # map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), edgeclusters.items())
+    # viewer.plotClusters(mat)
     im.save("output.png")
     im.show()
+
+def draw_thick_point(im, xy):
+    i = int(xy[0])
+    j = int(xy[1])
+    draw = ImageDraw.Draw(im)
+    for x in range(i-2, i+1):
+        for y in range(j-2, j+1):
+            draw.point([x,y], fill='#31ff00')
+    return im
 
 

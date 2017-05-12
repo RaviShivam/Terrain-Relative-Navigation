@@ -1,4 +1,5 @@
 import numpy as np
+import timeit
 import scipy.cluster.hierarchy as hcluster
 from PIL import Image
 from PIL import ImageChops
@@ -35,7 +36,7 @@ def applyPrimaryIlluminationFilter(im):
             else:
                 imagematrix[i, j] = 255
     # Uncomment this next line of code to view the intermediate result of the filter.
-    # viewer.showGray(imagematrix)
+    viewer.showGray(imagematrix)
     return array, imagematrix
 
 
@@ -56,10 +57,10 @@ def retrieveCraterClusters(array):
         else:
             sortedclusters[clusters[i]] = [mat[i]]
     sortedclusters = {k: v for k, v in sortedclusters.iteritems() if len(v) > 12}
-    ### Uncomment this section to plot the clusters.
-    # mat = []
-    # map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
-    # viewer.plotClusters(mat)
+    ## Uncomment this section to plot the clusters.
+    mat = []
+    map(lambda (k, v): map(lambda l: mat.append([l[0], l[1]]), v), sortedclusters.items())
+    viewer.plotClusters(mat)
     ###
     return reIndexCenterPoints(sortedclusters)
 
@@ -84,9 +85,13 @@ def retrieveAllClusterCenterPoints(sortedclusters, imagematrix):
     :param imagematrix: original image in matrix form
     :return: return all the centerpoints and initial diameters of the
     """
+    # draw = ImageDraw.Draw(im)
     craters = {}
+    edges = {}
     for (k, v) in sortedclusters.items():
         edgecluster = viewer.findEdges(v, imagematrix)
+        # map(lambda x: edges[x.key]=x.value, edgecluster)
+        # map(lambda x: viewer.drawpoint(draw, (x[1], x[0]), 6), edgecluster)
         distance, fartestpoints = viewer.searchForFartestPoint(edgecluster) #Search for fartestpoint in cluster for diameter determination.
         diameter = 1.35 * distance
         x, y = viewer.calculateMiddlePoint(diameter, fartestpoints)
@@ -104,7 +109,7 @@ def extractCraters(im):
     array, imagematrix = applyPrimaryIlluminationFilter(im)
     sortedclusters = retrieveCraterClusters(array)
     craters = retrieveAllClusterCenterPoints(sortedclusters, imagematrix)
-    # ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
+    ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
     return craters
 
 def extractCratersWithImage(im):
@@ -116,6 +121,17 @@ def extractCratersWithImage(im):
     array, imagematrix = applyPrimaryIlluminationFilter(im)
     sortedclusters = retrieveCraterClusters(array)
     ellipsefitter.drawFoundCraters(sortedclusters, imagematrix, im)
+
+start = timeit.default_timer()
+
+extractCratersWithImage(Image.open("../data/TRN/Scene3.ppm"))
+
+stop = timeit.default_timer()
+
+# print stop - start
+
+
+
 
 """
 This part of the code is NOT used for the actual program. Rather, was tried to be implemented but did not succeed.
